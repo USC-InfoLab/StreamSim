@@ -45,7 +45,6 @@ jobs:
       - name: Build sphinx documentation
         run: |
           pip install sphinx-rtd-theme
-          cp config.yml.example config.yml
           sphinx-apidoc -o docs .
           cd docs
           sphinx-build -b html . _build/html
