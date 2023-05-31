@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>stream_sim &mdash; StreamSim 0.0.10 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/sphinx_highlight.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            StreamSim
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../getting_started.html">Get Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../conf.html">conf module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../stream_sim.html">stream_sim module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../ingest_stream.html">ingest_stream module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../utils.html">utils module</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">StreamSim</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Module code</a></li>
+      <li class="breadcrumb-item active">stream_sim</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for stream_sim</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">from</span> <span class="nn">flask</span> <span class="kn">import</span> <span class="n">Flask</span><span class="p">,</span> <span class="n">jsonify</span><span class="p">,</span> <span class="n">redirect</span><span class="p">,</span> <span class="n">url_for</span>
+<span class="kn">from</span> <span class="nn">sqlalchemy</span> <span class="kn">import</span> <span class="n">create_engine</span>
+<span class="kn">from</span> <span class="nn">loguru</span> <span class="kn">import</span> <span class="n">logger</span>
+<span class="kn">import</span> <span class="nn">urllib.parse</span>
+
+<span class="kn">from</span> <span class="nn">conf</span> <span class="kn">import</span> <span class="o">*</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">Singleton</span>
+
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">Flask</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+        
+
+<div class="viewcode-block" id="DataLoader"><a class="viewcode-back" href="../stream_sim.html#stream_sim.DataLoader">[docs]</a><span class="k">class</span> <span class="nc">DataLoader</span><span class="p">(</span><span class="n">metaclass</span><span class="o">=</span><span class="n">Singleton</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Singleton DataLoader class for loading and retrieving data in batches.</span>
+
+<span class="sd">    This class provides functionality to load data and retrieve it in batches, maintaining a singleton</span>
+<span class="sd">    instance throughout the application.</span>
+
+<span class="sd">    Attributes:</span>
+<span class="sd">        df (pandas.DataFrame): The underlying data in a pandas DataFrame.</span>
+<span class="sd">        batch_size (int): The size of each data batch.</span>
+<span class="sd">        row_ind (int): The current row index.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">df</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">row_ind</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize the DataLoader with data and parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            df (pandas.DataFrame): The underlying data in a pandas DataFrame.</span>
+<span class="sd">            batch_size (int, optional): The size of each data batch. Defaults to 1.</span>
+<span class="sd">            row_ind (int, optional): The initial row index. Defaults to 0.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">df</span> <span class="o">=</span> <span class="n">df</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span> <span class="o">=</span> <span class="n">batch_size</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_ind</span> <span class="o">=</span> <span class="n">row_ind</span>
+        
+
+        
+<div class="viewcode-block" id="DataLoader.get_next"><a class="viewcode-back" href="../stream_sim.html#stream_sim.DataLoader.get_next">[docs]</a>    <span class="k">def</span> <span class="nf">get_next</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the next batch of data.</span>
+
+<span class="sd">        This method retrieves the next batch of data from the underlying DataFrame based on the current</span>
+<span class="sd">        row index and batch size. It also updates the row index for the next batch.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            pandas.DataFrame: The next batch of data.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="o">.</span><span class="n">iloc</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">row_ind</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">row_ind</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">]</span>
+        <span class="c1"># res[&#39;timestamp&#39;] = res[&#39;timestamp&#39;].dt.strftime(&#39;%Y-%m-%d %H:%M:%S&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">row_ind</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">row_ind</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">df</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">row_ind</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">res</span></div></div>
+        
+            
+
+<div class="viewcode-block" id="get_db_engine"><a class="viewcode-back" href="../stream_sim.html#stream_sim.get_db_engine">[docs]</a><span class="k">def</span> <span class="nf">get_db_engine</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns a SQLAlchemy engine for connecting to the database.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        engine (sqlalchemy.engine.base.Engine): SQLAlchemy engine object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">db_pass_enc</span> <span class="o">=</span> <span class="n">urllib</span><span class="o">.</span><span class="n">parse</span><span class="o">.</span><span class="n">quote_plus</span><span class="p">(</span><span class="n">DB_PASS</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">create_engine</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">DBMS</span><span class="si">}</span><span class="s1">://</span><span class="si">{</span><span class="n">DB_USER</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">db_pass_enc</span><span class="si">}</span><span class="s1">@</span><span class="si">{</span><span class="n">DB_HOST</span><span class="si">}</span><span class="s1">:</span><span class="si">{</span><span class="n">DB_PORT</span><span class="si">}</span><span class="s1">/</span><span class="si">{</span><span class="n">DB_NAME</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_query_result"><a class="viewcode-back" href="../stream_sim.html#stream_sim.get_query_result">[docs]</a><span class="k">def</span> <span class="nf">get_query_result</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">db_conn</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="p">[]):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Executes a SQL query on the database connection and returns the result as a Pandas DataFrame.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        query (str): SQL query to be executed.</span>
+<span class="sd">        db_conn (sqlalchemy.engine.base.Connection): Database connection object.</span>
+<span class="sd">        params (list, optional): Parameters to be passed to the SQL query. Defaults to [].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        result (pandas.DataFrame): Result of the SQL query as a Pandas DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_sql</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">db_conn</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="get_series_from_db"><a class="viewcode-back" href="../stream_sim.html#stream_sim.get_series_from_db">[docs]</a><span class="k">def</span> <span class="nf">get_series_from_db</span><span class="p">(</span><span class="n">db_conn</span><span class="p">,</span> <span class="n">table_name</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">id_column</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves the series data for specific IDs from the database starting from the specified time.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        db_conn (sqlalchemy.engine.base.Connection): Database connection object.</span>
+<span class="sd">        table_name (str): Name of the table to retrieve the series data from.</span>
+<span class="sd">        ids (list or None, optional): IDs for which to retrieve the series data. Defaults to None.</span>
+<span class="sd">        id_column (str or None, optional): Name of the ID column in the database table. Defaults to None.</span>
+<span class="sd">        start_time (str or None, optional): Start time from which to retrieve the series data. Defaults to None.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        result (pandas.DataFrame): Result of the SQL query as a Pandas DataFrame.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">conditions</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">id_column</span><span class="si">}</span><span class="s2"> IN (</span><span class="si">{</span><span class="s1">&#39;,&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">]</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="nb">len</span><span class="p">(</span><span class="n">ids</span><span class="p">))</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">start_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">conditions</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;timestamp &gt;= &#39;</span><span class="si">{</span><span class="n">start_time</span><span class="si">}</span><span class="s2">&#39;&quot;</span><span class="p">)</span>
+
+    <span class="n">condition_str</span> <span class="o">=</span> <span class="s2">&quot; AND &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">conditions</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">condition_str</span><span class="p">:</span>
+        <span class="n">condition_str</span> <span class="o">=</span> <span class="s2">&quot;WHERE &quot;</span> <span class="o">+</span> <span class="n">condition_str</span>
+
+    <span class="n">query</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">    SELECT * FROM </span><span class="si">{</span><span class="n">table_name</span><span class="si">}</span>
+<span class="s1">    </span><span class="si">{</span><span class="n">condition_str</span><span class="si">}</span>
+<span class="s1">    ORDER BY timestamp ASC;</span>
+<span class="s1">    &#39;&#39;&#39;</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="n">ids</span> <span class="k">if</span> <span class="n">ids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+
+    <span class="k">return</span> <span class="n">get_query_result</span><span class="p">(</span><span class="n">query</span><span class="p">,</span> <span class="n">db_conn</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_data"><a class="viewcode-back" href="../stream_sim.html#stream_sim.get_data">[docs]</a><span class="k">def</span> <span class="nf">get_data</span><span class="p">(</span><span class="n">config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves the data from either a database table or a CSV file based on the configuration.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        config (dict): Configuration dictionary containing the &#39;DATA_TYPE&#39;, &#39;DATASET&#39; path, &#39;IDs&#39;, and &#39;START_TIME&#39;, DB_TABLE, DATE_TIME_COL.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        result (pandas.DataFrame): Data retrieved from the database table or CSV file.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data_type</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DATA_TYPE&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">dataset_path</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DATASET&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;IDS&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">start_time</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;START_TIME&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">db_table</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DB_TABLE&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">date_time_col</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;DATE_TIME_COL&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    
+    <span class="k">if</span> <span class="n">date_time_col</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;DATE_TIME_COL must be specified.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data_type</span> <span class="o">!=</span> <span class="s1">&#39;DATABASE&#39;</span> <span class="ow">and</span> <span class="n">data_type</span> <span class="o">!=</span> <span class="s1">&#39;CSV&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;DATA_TYPE must be either DATABASE or CSV.&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">data_type</span> <span class="o">==</span> <span class="s1">&#39;DATABASE&#39;</span><span class="p">:</span>
+        <span class="c1"># Fetching data from database table</span>
+        <span class="n">db_conn</span> <span class="o">=</span> <span class="n">get_db_engine</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">get_series_from_db</span><span class="p">(</span><span class="n">db_conn</span><span class="p">,</span> <span class="n">table_name</span><span class="o">=</span><span class="n">db_table</span><span class="p">,</span> <span class="n">ids</span><span class="o">=</span><span class="n">ids</span><span class="p">,</span> <span class="n">start_time</span><span class="o">=</span><span class="n">start_time</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">data_type</span> <span class="o">==</span> <span class="s1">&#39;CSV&#39;</span><span class="p">:</span>
+        <span class="c1"># Fetching data from CSV file</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">dataset_path</span><span class="p">)</span>
+        <span class="n">df</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">date_time_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">to_datetime</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">date_time_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">])</span>
+        <span class="c1"># sort by timestamp</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">sort_values</span><span class="p">(</span><span class="n">by</span><span class="o">=</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">date_time_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">])</span>
+
+        <span class="c1"># Apply conditions if they exist</span>
+        <span class="k">if</span> <span class="n">ids</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">isin</span><span class="p">(</span><span class="n">ids</span><span class="p">)]</span>
+        <span class="k">if</span> <span class="n">start_time</span><span class="p">:</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">date_time_col</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">start_time</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">df</span> </div>
+
+
+<div class="viewcode-block" id="init_dataloader"><a class="viewcode-back" href="../stream_sim.html#stream_sim.init_dataloader">[docs]</a><span class="k">def</span> <span class="nf">init_dataloader</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Initializes the DataLoader with the fetched data based on the configuration.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        DataLoader: Initialized DataLoader instance.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;DATA_TYPE&#39;</span><span class="p">:</span> <span class="n">DATA_TYPE</span><span class="p">,</span>
+        <span class="s1">&#39;DATASET&#39;</span><span class="p">:</span> <span class="n">DATASET</span><span class="p">,</span>
+        <span class="s1">&#39;IDS&#39;</span><span class="p">:</span> <span class="n">get_ids</span><span class="p">(),</span>
+        <span class="s1">&#39;START_TIME&#39;</span><span class="p">:</span> <span class="n">START_TIME</span><span class="p">,</span>
+        <span class="s1">&#39;DB_TABLE&#39;</span><span class="p">:</span> <span class="n">DB_TABLE</span><span class="p">,</span>
+        <span class="s1">&#39;DATE_TIME_COL&#39;</span><span class="p">:</span> <span class="n">DATE_TIME_COL</span>
+    <span class="p">}</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">get_data</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">DataLoader</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">batch_size</span><span class="o">=</span><span class="n">BATCH</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_ids"><a class="viewcode-back" href="../stream_sim.html#stream_sim.get_ids">[docs]</a><span class="k">def</span> <span class="nf">get_ids</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Retrieves the target IDs.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        list or None: List of IDs or None if not specified in the config.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ids</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Default IDs if not specified in the config</span>
+    <span class="c1"># You can implement your own logic to fetch IDs</span>
+    <span class="k">return</span> <span class="n">ids</span></div>
+
+
+<div class="viewcode-block" id="root"><a class="viewcode-back" href="../stream_sim.html#stream_sim.root">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">root</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Redirects the root URL to the &#39;fetch_sensor_data&#39; endpoint.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Response: A redirection response to the &#39;fetch_sensor_data&#39; endpoint.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">redirect</span><span class="p">(</span><span class="n">url_for</span><span class="p">(</span><span class="s1">&#39;fetch_sensor_data&#39;</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="fetch_sensor_data"><a class="viewcode-back" href="../stream_sim.html#stream_sim.fetch_sensor_data">[docs]</a><span class="nd">@app</span><span class="o">.</span><span class="n">route</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;/</span><span class="si">{</span><span class="n">URL_PATH</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">fetch_sensor_data</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Fetches sensor data from the data loader and returns it as a JSON response.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Response: A JSON response containing the fetched sensor data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data_loader</span> <span class="o">=</span> <span class="n">init_dataloader</span><span class="p">()</span>
+    <span class="n">rows</span> <span class="o">=</span> <span class="n">data_loader</span><span class="o">.</span><span class="n">get_next</span><span class="p">()</span>
+    <span class="n">rows_with_strftime</span> <span class="o">=</span> <span class="n">rows</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">rows_dict</span> <span class="o">=</span> <span class="n">rows_with_strftime</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="s1">&#39;records&#39;</span><span class="p">)</span>
+    <span class="n">resp</span> <span class="o">=</span> <span class="n">jsonify</span><span class="p">(</span><span class="n">rows_dict</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">resp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">resp</span></div>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">app</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">host</span><span class="o">=</span><span class="n">HOST</span><span class="p">,</span> <span class="n">port</span><span class="o">=</span><span class="n">PORT</span><span class="p">,</span> <span class="n">debug</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Arash Hajisafi.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

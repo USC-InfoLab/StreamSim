@@ -47,7 +47,11 @@
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Get Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conf.html">conf module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stream_sim.html">stream_sim module</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">ingest_stream module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">ingest_stream module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ingest_stream.get_data"><code class="docutils literal notranslate"><span class="pre">get_data()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#ingest_stream.process_stream"><code class="docutils literal notranslate"><span class="pre">process_stream()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">utils module</a></li>
 </ul>
 
@@ -75,8 +79,36 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="ingest-stream-module">
-<h1>ingest_stream module<a class="headerlink" href="#ingest-stream-module" title="Permalink to this heading"></a></h1>
+  <section id="module-ingest_stream">
+<span id="ingest-stream-module"></span><h1>ingest_stream module<a class="headerlink" href="#module-ingest_stream" title="Permalink to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="ingest_stream.get_data">
+<span class="sig-prename descclassname"><span class="pre">ingest_stream.</span></span><span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/ingest_stream.html#get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ingest_stream.get_data" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves new data from the Flask server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>DataFrame containing the new data from the server.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>df (pandas.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="ingest_stream.process_stream">
+<span class="sig-prename descclassname"><span class="pre">ingest_stream.</span></span><span class="sig-name descname"><span class="pre">process_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/ingest_stream.html#process_stream"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#ingest_stream.process_stream" title="Permalink to this definition"></a></dt>
+<dd><p>Processes the new data received from the stream.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>new_data</strong> (<em>pandas.DataFrame</em>) – DataFrame containing the new data.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>None</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 

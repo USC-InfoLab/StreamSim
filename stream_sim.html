@@ -46,7 +46,24 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="getting_started.html">Get Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="conf.html">conf module</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">stream_sim module</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">stream_sim module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#stream_sim.DataLoader"><code class="docutils literal notranslate"><span class="pre">DataLoader</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#stream_sim.DataLoader.df"><code class="docutils literal notranslate"><span class="pre">DataLoader.df</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stream_sim.DataLoader.batch_size"><code class="docutils literal notranslate"><span class="pre">DataLoader.batch_size</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stream_sim.DataLoader.row_ind"><code class="docutils literal notranslate"><span class="pre">DataLoader.row_ind</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stream_sim.DataLoader.get_next"><code class="docutils literal notranslate"><span class="pre">DataLoader.get_next()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#stream_sim.fetch_sensor_data"><code class="docutils literal notranslate"><span class="pre">fetch_sensor_data()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stream_sim.get_data"><code class="docutils literal notranslate"><span class="pre">get_data()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stream_sim.get_db_engine"><code class="docutils literal notranslate"><span class="pre">get_db_engine()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stream_sim.get_ids"><code class="docutils literal notranslate"><span class="pre">get_ids()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stream_sim.get_query_result"><code class="docutils literal notranslate"><span class="pre">get_query_result()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stream_sim.get_series_from_db"><code class="docutils literal notranslate"><span class="pre">get_series_from_db()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stream_sim.init_dataloader"><code class="docutils literal notranslate"><span class="pre">init_dataloader()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#stream_sim.root"><code class="docutils literal notranslate"><span class="pre">root()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="ingest_stream.html">ingest_stream module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">utils module</a></li>
 </ul>
@@ -75,8 +92,197 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="stream-sim-module">
-<h1>stream_sim module<a class="headerlink" href="#stream-sim-module" title="Permalink to this heading"></a></h1>
+  <section id="module-stream_sim">
+<span id="stream-sim-module"></span><h1>stream_sim module<a class="headerlink" href="#module-stream_sim" title="Permalink to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="stream_sim.DataLoader">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">stream_sim.</span></span><span class="sig-name descname"><span class="pre">DataLoader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#DataLoader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.DataLoader" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Singleton DataLoader class for loading and retrieving data in batches.</p>
+<p>This class provides functionality to load data and retrieve it in batches, maintaining a singleton
+instance throughout the application.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="stream_sim.DataLoader.df">
+<span class="sig-name descname"><span class="pre">df</span></span><a class="headerlink" href="#stream_sim.DataLoader.df" title="Permalink to this definition"></a></dt>
+<dd><p>The underlying data in a pandas DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="stream_sim.DataLoader.batch_size">
+<span class="sig-name descname"><span class="pre">batch_size</span></span><a class="headerlink" href="#stream_sim.DataLoader.batch_size" title="Permalink to this definition"></a></dt>
+<dd><p>The size of each data batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="stream_sim.DataLoader.row_ind">
+<span class="sig-name descname"><span class="pre">row_ind</span></span><a class="headerlink" href="#stream_sim.DataLoader.row_ind" title="Permalink to this definition"></a></dt>
+<dd><p>The current row index.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="stream_sim.DataLoader.get_next">
+<span class="sig-name descname"><span class="pre">get_next</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#DataLoader.get_next"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.DataLoader.get_next" title="Permalink to this definition"></a></dt>
+<dd><p>Get the next batch of data.</p>
+<p>This method retrieves the next batch of data from the underlying DataFrame based on the current
+row index and batch size. It also updates the row index for the next batch.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The next batch of data.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>pandas.DataFrame</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stream_sim.fetch_sensor_data">
+<span class="sig-prename descclassname"><span class="pre">stream_sim.</span></span><span class="sig-name descname"><span class="pre">fetch_sensor_data</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#fetch_sensor_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.fetch_sensor_data" title="Permalink to this definition"></a></dt>
+<dd><p>Fetches sensor data from the data loader and returns it as a JSON response.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A JSON response containing the fetched sensor data.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stream_sim.get_data">
+<span class="sig-prename descclassname"><span class="pre">stream_sim.</span></span><span class="sig-name descname"><span class="pre">get_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#get_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.get_data" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the data from either a database table or a CSV file based on the configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>config</strong> (<em>dict</em>) – Configuration dictionary containing the ‘DATA_TYPE’, ‘DATASET’ path, ‘IDs’, and ‘START_TIME’, DB_TABLE, DATE_TIME_COL.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Data retrieved from the database table or CSV file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>result (pandas.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stream_sim.get_db_engine">
+<span class="sig-prename descclassname"><span class="pre">stream_sim.</span></span><span class="sig-name descname"><span class="pre">get_db_engine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#get_db_engine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.get_db_engine" title="Permalink to this definition"></a></dt>
+<dd><p>Returns a SQLAlchemy engine for connecting to the database.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>SQLAlchemy engine object.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>engine (sqlalchemy.engine.base.Engine)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stream_sim.get_ids">
+<span class="sig-prename descclassname"><span class="pre">stream_sim.</span></span><span class="sig-name descname"><span class="pre">get_ids</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#get_ids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.get_ids" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the target IDs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>List of IDs or None if not specified in the config.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>list or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stream_sim.get_query_result">
+<span class="sig-prename descclassname"><span class="pre">stream_sim.</span></span><span class="sig-name descname"><span class="pre">get_query_result</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">query</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">db_conn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[]</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#get_query_result"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.get_query_result" title="Permalink to this definition"></a></dt>
+<dd><p>Executes a SQL query on the database connection and returns the result as a Pandas DataFrame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>query</strong> (<em>str</em>) – SQL query to be executed.</p></li>
+<li><p><strong>db_conn</strong> (<em>sqlalchemy.engine.base.Connection</em>) – Database connection object.</p></li>
+<li><p><strong>params</strong> (<em>list</em><em>, </em><em>optional</em>) – Parameters to be passed to the SQL query. Defaults to [].</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Result of the SQL query as a Pandas DataFrame.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>result (pandas.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stream_sim.get_series_from_db">
+<span class="sig-prename descclassname"><span class="pre">stream_sim.</span></span><span class="sig-name descname"><span class="pre">get_series_from_db</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">db_conn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">table_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#get_series_from_db"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.get_series_from_db" title="Permalink to this definition"></a></dt>
+<dd><p>Retrieves the series data for specific IDs from the database starting from the specified time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>db_conn</strong> (<em>sqlalchemy.engine.base.Connection</em>) – Database connection object.</p></li>
+<li><p><strong>table_name</strong> (<em>str</em>) – Name of the table to retrieve the series data from.</p></li>
+<li><p><strong>ids</strong> (<em>list</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – IDs for which to retrieve the series data. Defaults to None.</p></li>
+<li><p><strong>id_column</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Name of the ID column in the database table. Defaults to None.</p></li>
+<li><p><strong>start_time</strong> (<em>str</em><em> or </em><em>None</em><em>, </em><em>optional</em>) – Start time from which to retrieve the series data. Defaults to None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Result of the SQL query as a Pandas DataFrame.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>result (pandas.DataFrame)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stream_sim.init_dataloader">
+<span class="sig-prename descclassname"><span class="pre">stream_sim.</span></span><span class="sig-name descname"><span class="pre">init_dataloader</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#init_dataloader"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.init_dataloader" title="Permalink to this definition"></a></dt>
+<dd><p>Initializes the DataLoader with the fetched data based on the configuration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Initialized DataLoader instance.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="#stream_sim.DataLoader" title="stream_sim.DataLoader">DataLoader</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="stream_sim.root">
+<span class="sig-prename descclassname"><span class="pre">stream_sim.</span></span><span class="sig-name descname"><span class="pre">root</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/stream_sim.html#root"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#stream_sim.root" title="Permalink to this definition"></a></dt>
+<dd><p>Redirects the root URL to the ‘fetch_sensor_data’ endpoint.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A redirection response to the ‘fetch_sensor_data’ endpoint.</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>Response</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 
 
