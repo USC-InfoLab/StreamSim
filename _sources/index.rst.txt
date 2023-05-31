@@ -10,6 +10,12 @@ Welcome to StreamSim's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+   getting_started
+   conf
+   stream_sim
+   ingest_stream
+   utils
+
 
 
 Indices and tables
