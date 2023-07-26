@@ -14,7 +14,7 @@ StreamSim is a real-time data streaming simulator tool that allows researchers a
 
 ## Documentation
 
-For detailed instructions on how to use the functions and modules provided by StreamSim, please refer to the [StreamSim Documentation](https://nih-w4h.github.io/StreamSim/).
+For detailed instructions on how to use the functions and modules provided by StreamSim, please refer to the [StreamSim Documentation](https://usc-infolab.github.io/StreamSim/).
 
 
 ## Features
